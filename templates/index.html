@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tomato Leaf Disease Predictor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Tomato Leaf Disease Predictor</h1>
+        <p>Upload an image of a tomato leaf here to predict its disease.</p>
+
+        <div class="upload-area">
+            <form id="uploadForm" enctype="multipart/form-data">
+                <input type="file" id="fileInput" name="file" accept="image/*" required>
+                <button type="button" onclick="uploadImage()">Predict</button>
+            </form>
+        </div>
+
+        <div id="output">
+            <p><b>PREDICTED DISEASE :</b> <span id="diseaseName">None</span></p>
+        </div>
+
+        <div class="image-preview" id="imagePreview">
+            <img id="uploadedImage" alt="Uploaded Leaf Image" style="display:none;"/>
+        </div>
+    </div>
+
+    <script>
+        function uploadImage() {
+            let fileInput = document.getElementById('fileInput');
+            let formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            // Send the image to the server
+            fetch('/predict', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.predicted_class) {
+                    document.getElementById('diseaseName').textContent = data.predicted_class;
+                } else if (data.error) {
+                    document.getElementById('diseaseName').textContent = "Error: " + data.error;
+                }
+
+                // Display the uploaded image
+                let uploadedImage = document.getElementById('uploadedImage');
+                uploadedImage.src = URL.createObjectURL(fileInput.files[0]);
+                uploadedImage.style.display = 'block';
+            })
+            .catch(error => {
+                document.getElementById('diseaseName').textContent = "Error: " + error;
+            });
+        }
+    </script>
+</body>
+</html>
